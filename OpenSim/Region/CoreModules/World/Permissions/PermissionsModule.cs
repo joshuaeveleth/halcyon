@@ -123,7 +123,10 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             List<string> modules=new List<string>(permissionModules.Split(','));
 
             if (!modules.Contains("DefaultPermissionsModule"))
+            {
+                m_log.Debug("[PERMISSIONS]: DefaultPermissionsModule is not configured.  Disabling...");
                 return;
+            }
 
             m_allowGridGods = myConfig.GetBoolean("allow_grid_gods", false);
             m_bypassPermissions = !myConfig.GetBoolean("serverside_object_permissions", false);
