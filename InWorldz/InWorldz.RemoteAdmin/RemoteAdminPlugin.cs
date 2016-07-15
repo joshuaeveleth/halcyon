@@ -295,7 +295,7 @@ namespace InWorldz.RemoteAdmin
         }
 
         /// <summary>
-        /// Load an OAR file into a region..
+        /// Save an OAR file from a region..
         /// <summary>
         /// <param name="request">incoming XML RPC request</param>
         /// <remarks>
@@ -304,8 +304,8 @@ namespace InWorldz.RemoteAdmin
         /// <listheader><term>parameter name</term><description>description</description></listheader>
         /// <item><term>session</term>
         ///       <description>An authenticated session ID</description></item>
-        /// <item><term>region_uuid</term>
-        ///       <description>UUID of the region</description></item>
+        /// <item><term>region_name</term>
+        ///       <description>Name of the region</description></item>
         /// <item><term>filename</term>
         ///       <description>file name of the OAR file</description></item>
         /// </list>
@@ -354,7 +354,7 @@ namespace InWorldz.RemoteAdmin
         }
 
         /// <summary>
-        /// Load an OAR file into a region..
+        /// Backup an OAR file from a region..
         /// <summary>
         /// <param name="request">incoming XML RPC request</param>
         /// <remarks>
@@ -363,8 +363,8 @@ namespace InWorldz.RemoteAdmin
         /// <listheader><term>parameter name</term><description>description</description></listheader>
         /// <item><term>session</term>
         ///       <description>An authenticated session ID</description></item>
-        /// <item><term>region_uuid</term>
-        ///       <description>UUID of the region</description></item>
+        /// <item><term>region_name</term>
+        ///       <description>Name of the region</description></item>
         /// <item><term>filename</term>
         ///       <description>file name of the OAR file</description></item>
         /// </list>
@@ -413,8 +413,8 @@ namespace InWorldz.RemoteAdmin
         /// <listheader><term>parameter name</term><description>description</description></listheader>
         /// <item><term>session</term>
         ///       <description>An authenticated session ID</description></item>
-        /// <item><term>region_uuid</term>
-        ///       <description>UUID of the region</description></item>
+        /// <item><term>region_name</term>
+        ///       <description>Name of the region</description></item>
         /// <item><term>filename</term>
         ///       <description>file name of the OAR file</description></item>
         /// </list>
