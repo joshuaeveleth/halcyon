@@ -756,7 +756,8 @@ namespace OpenSim.Region.Framework.Scenes
 
         private void TestForAndBeginCrossing(Vector3 val, bool physicsTriggered)
         {
-            if (!Scene.HasNeighborAtPosition(val.X, val.Y))
+            SimpleRegionInfo destRegion = this.Scene.GetNeighborAtPosition(val.X, val.Y);
+            if (destRegion == null)
             {
                 ForcePositionInRegion();
                 Scene.CheckDieAtEdge(this);
@@ -767,6 +768,14 @@ namespace OpenSim.Region.Framework.Scenes
             //still have connections establishing, fail the crossing and let them establish
             this.ForEachSittingAvatar(delegate (ScenePresence avatar)
             {
+                if (!avatar.IsFullyInRegion)
+                {
+                    // avatar.ControllingClient.SendAlertMessage("Can not move to a new region, still entering this one");
+                    ForcePositionInRegion();
+                    return;
+                }
+
+
                 if (avatar.RemotePresences.HasConnectionsEstablishing())
                 {
                     // avatar.ControllingClient.SendAlertMessage("Can not move to a new region, connections are still being established");
@@ -1781,23 +1790,42 @@ namespace OpenSim.Region.Framework.Scenes
         /// <param name="m_physicalPrim"></param>
         public void ApplyPhysics(bool allowPhysicalPrims, bool fromStorage)
         {
+            // Some diagnostic thresholds for reporting slow/inefficient operations.
+            const int SLOW_CALC_THRESHOLD = 1000;   // > this in ms considered slow calc
+            const int PHYS_PRIMS_THRESHOLD = 16; // > this reports many physical prims
+
             if (!m_rootPart.PhysicsSummary.NeedsPhysicsShape)
                 return;
 
             if (m_childParts.Count > 1)
             {
                 List<BulkShapeData> allParts = new List<BulkShapeData>();
-                allParts.Add(m_rootPart.GenerateBulkShapeData());
-
-                m_childParts.ForEachPart((SceneObjectPart part) => {
-                    if (part.LocalId != m_rootPart.LocalId)
+                int count = 1;
+                Vector3 pos = this.AbsolutePosition;
+                string prefix = String.Format("[SCENE]: Slow GenerateBulkShapeData for '{0}' at {1}/{2}/{3} ", this.Name, (int)pos.X, (int)pos.Y, (int)pos.Z);
+                Util.ReportIfSlow(prefix+"(object)", SLOW_CALC_THRESHOLD, () => 
+                {
+                    Util.ReportIfSlow(prefix+"(root)", SLOW_CALC_THRESHOLD, () => 
                     {
-                        if (part.RequiresPhysicalShape)
+                        allParts.Add(m_rootPart.GenerateBulkShapeData());
+                    });
+
+                    m_childParts.ForEachPart((SceneObjectPart part) => {
+                        if (part.LocalId != m_rootPart.LocalId)
                         {
-                            allParts.Add(part.GenerateBulkShapeData());
+                            if (part.RequiresPhysicalShape)
+                            {
+                                count++;
+                                Util.ReportIfSlow(prefix+"(#"+part.LinkNum.ToString()+")", SLOW_CALC_THRESHOLD, () =>
+                                {
+                                    allParts.Add(part.GenerateBulkShapeData());
+                                });
+                            }
                         }
-                    }
+                    });
                 });
+                if (count > PHYS_PRIMS_THRESHOLD)
+                    m_log.WarnFormat("[SCENE]: ApplyPhysics object included {0} physical prims.", count);
 
                 m_scene.PhysicsScene.BulkAddPrimShapes(allParts, m_rootPart.GeneratePhysicsAddPrimShapeFlags(allowPhysicalPrims, fromStorage));
 
